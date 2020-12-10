@@ -1,0 +1,299 @@
+<!DOCTYPE html><html lang=en><head><base href=../ ><title>A detailed example of data generators with Keras</title><meta charset=utf-8><meta content="Blog of Shervine Amidi, Graduate Student at Stanford University." name=description><meta content="keras 2, tensorflow, how to, generate data on the fly, keras generator example, example data generator keras, fit_generator example, keras fit_generator" name=keywords><meta content="width=device-width, initial-scale=1" name=viewport><link href=https://stanford.edu/~shervine/blog/keras-how-to-generate-data-on-the-fly rel=canonical><link href=https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css rel=stylesheet><link href=css/style.min.css?3587b1299365680430aa5634d6b49ffb rel=stylesheet type=text/css><link href=css/article.min.css?7ecf0d5a8e06567a9e963d255c1e32e1 rel=stylesheet><link href=https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css rel=stylesheet><script src=https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js></script><script src=https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js></script><script defer src=https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.9.1/underscore-min.js type=text/javascript></script><script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML" type=text/javascript>
+    </script><script src=js/ga.min.js?973cf97267541a888198336699a55cfd></script><script defer src=js/article.min.js?d4501a257815c34bb5963984260f6b39></script><script defer src=js/lang.min.js?49b78d872651f24046a7aff7b8536db5></script><script async defer src=https://buttons.github.io/buttons.js></script></head> <body data-offset=50 data-spy=scroll data-target=.navbar> <nav class="navbar navbar-inverse navbar-static-top"> <div class=container-fluid> <div class=navbar-header> <button class=navbar-toggle data-target=#myNavbar data-toggle=collapse type=button> <span class=icon-bar></span> <span class=icon-bar></span> <span class=icon-bar></span> </button> <a class=navbar-brand href onclick=trackOutboundLink(this);> <img alt=Stanford src=images/stanford-logo.png?f7176222abba492681ca93190e078e48> </a> <p class=navbar-text><font color=#dddddd>Shervine Amidi</font></p> </div> <div class="collapse navbar-collapse" id=myNavbar> <ul class="nav navbar-nav"> <li><a href onclick=trackOutboundLink(this);>About</a></li> </ul> <ul class="nav navbar-nav navbar-center"> <li><a href=projects onclick=trackOutboundLink(this);>Projects</a></li> <li><a href=https://www.mit.edu/~amidi/teaching/data-science-tools onclick=trackOutboundLink(this);>Teaching</a></li> <li class=active><a href=blog onclick=trackOutboundLink(this);>Blog</a></li> </ul> <div class="collapse navbar-collapse" data-target=None id=HiddenNavbar> <ul class="nav navbar-nav navbar-right"> <li><a href=https://www.mit.edu/~amidi onclick=trackOutboundLink(this);>About</a></li> <p class=navbar-text><font color=#dddddd>Afshine Amidi</font></p> <a class=navbar-brand href=https://www.mit.edu/~amidi onclick=trackOutboundLink(this); style="padding: 0px;"> <img alt=MIT src=images/mit-logo.png?4f7adbadc5c51293b439c17d7305f96b style="padding: 15px 15px; width: 70px; margin-left: 15px; margin-right: 5px;"> </a> </ul> </div> </div> </div> </nav> <div id=wrapper> <div id=sidebar-wrapper> <div class=sidebar-top> <li class=sidebar-title> <a href=blog onclick=trackOutboundLink(this);><img alt=Stanford src=images/stanford-logo.png?f7176222abba492681ca93190e078e48 style="width: 15px;">   <b>Blog of Shervine Amidi</b></a> </li> <li class=sidebar-brand> <a href=#> <div> <span style=color:white>Keras data generator</span> </div> </a> </li> </div> <ul class=sidebar-nav> <li> <div class=dropdown-btn><a href=#motivation>Motivation</a></div> <div class=dropdown-container></div> </li> <li> <div class=dropdown-btn><a href=#tutorial>Tutorial</a></div> <div class=dropdown-container> <a href=#previous-situation><span>Previous situation</span></a> <a href=#notations><span>Notations</span></a> <a href=#data-generator><span>Data generator</span></a> <a href=#keras-script><span>Keras script</span></a> </div> </li> <li> <div class=dropdown-btn><a href=#conclusion>Conclusion</a></div> <div class=dropdown-container></div> </li> </ul> <center> <div class=sidebar-footer> <li> <a href=https://github.com/afshinea/keras-data-generator onclick=trackOutboundLink(this); style="color: white; text-decoration:none;"> <i aria-hidden=false class="fa fa-github fa-fw"></i> View code on GitHub </a> </li> </div> </center> </div> <div class=divider-5></div> <center> <img alt=Illustration class=img-responsive src=blog/illustrations/banner-data.jpg?c0e931a13775dd49a498414cb3eb9748> </center> <article class="markdown-body entry-content" itemprop=text>
+
+    
+    <div>
+      
+      <a href=blog onclick=trackOutboundLink(this); style="color: #0366d6;"><b>Blog</b></a>
+
+      
+      <div style=float:right;>
+        <div class=input-group>
+          <select class=form-control onchange=changeLangAndTrack(this); onfocus=storeCurrentIndex(this);>
+            <option selected value=en>English</option>
+            <option value=fr>Français</option>
+          </select>
+          <div class=input-group-addon><i class=fa></i></div>
+        </div>
+      </div>
+    </div>
+
+    <h1><a aria-hidden=true class=anchor-bis href=#a-detailed-example-of-how-to-use-data-generators-with-keras id=a-detailed-example-of-how-to-use-data-generators-with-keras></a>A detailed example of how to use data generators with Keras</h1>
+<p>
+  </p><div style=float:right>
+  <a aria-label="Fork afshinea/keras-data-generator on GitHub" class=github-button data-icon=octicon-repo-forked data-show-count=true href=https://github.com/afshinea/keras-data-generator/fork onclick=trackOutboundLink(this);>Fork</a>
+   
+  <a aria-label="Star afshinea/keras-data-generator on GitHub" class=github-button data-icon=octicon-star data-show-count=true href=https://github.com/afshinea/keras-data-generator/ onclick=trackOutboundLink(this);>Star</a>
+  </div>
+  <code>python</code> <code>keras 2</code> <code>fit_generator</code> <code>large dataset</code> <code>multiprocessing</code>
+<p></p>
+<i>By <a href=https://twitter.com/afshinea onclick=trackOutboundLink(this);>Afshine Amidi</a> and <a href=https://twitter.com/shervinea onclick=trackOutboundLink(this);>Shervine Amidi</a></i>
+<h2><a aria-hidden=true class=anchor href=#motivation id=motivation></a>Motivation</h2>
+<p>Have you ever had to load a dataset that was so memory consuming that you wished a magic trick could seamlessly take care of that? Large datasets are increasingly becoming part of our lives, as we are able to harness an ever-growing quantity of data.</p>
+<p>We have to keep in mind that in some cases, even the most state-of-the-art configuration won't have enough memory space to process the data the way we used to do it. That is the reason why we need to find other ways to do that task efficiently. In this blog post, we are going to show you how to <strong>generate your dataset on multiple cores in real time</strong> and <strong>feed it right away</strong> to your <strong>deep learning model</strong>.</p>
+<p>The framework used in this tutorial is the one provided by Python's high-level package <em>Keras</em>, which can be used on top of a GPU installation of either <em>TensorFlow</em> or <em>Theano</em>.</p>
+<h2><a aria-hidden=true class=anchor href=#tutorial id=tutorial></a>Tutorial</h2>
+<h3><a aria-hidden=true class=anchor-bis href=#previous-situation id=previous-situation></a>Previous situation</h3>
+<p>Before reading this article, your Keras script probably looked like this:</p>
+<div class="highlight highlight-source-python"><pre><span class=pl-k>import</span> numpy <span class=pl-k>as</span> np
+<span class=pl-k>from</span> keras.models <span class=pl-k>import</span> Sequential
+
+<span class=pl-c><span class=pl-c>#</span> Load entire dataset</span>
+X, y <span class=pl-k>=</span> np.load(<span class=pl-s><span class=pl-pds>'</span>some_training_set_with_labels.npy<span class=pl-pds>'</span></span>)
+
+<span class=pl-c><span class=pl-c>#</span> Design model</span>
+model <span class=pl-k>=</span> Sequential()
+[<span class=pl-c1>...</span>] <span class=pl-c><span class=pl-c>#</span> Your architecture</span>
+model.compile()
+
+<span class=pl-c><span class=pl-c>#</span> Train model on your dataset</span>
+model.fit(<span class=pl-v>x</span><span class=pl-k>=</span>X, <span class=pl-v>y</span><span class=pl-k>=</span>y)</pre></div>
+<p>This article is all about changing the line loading the entire dataset at once. Indeed, this task may cause issues as all of the training samples may not be able to fit in memory at the same time.</p>
+<p>In order to do so, let's dive into a step by step recipe that builds a data generator suited for this situation. By the way, the following code is a good skeleton to use for your own project; you can copy/paste the following pieces of code and fill the blanks accordingly.</p>
+<h3><a aria-hidden=true class=anchor-bis href=#notations id=notations></a>Notations</h3>
+<p>Before getting started, let's go through a few organizational tips that are particularly useful when dealing with large datasets.</p>
+<p>Let <code>ID</code> be the Python string that identifies a given sample of the dataset. A good way to keep track of samples and their labels is to adopt the following framework:</p>
+<ol>
+<li>
+<p>Create a dictionary called <code>partition</code> where you gather:</p>
+<ul>
+<li>in <code>partition['train']</code> a list of training IDs</li>
+<li>in <code>partition['validation']</code> a list of validation IDs</li>
+</ul>
+</li>
+<li>
+<p>Create a dictionary called <code>labels</code> where for each <code>ID</code> of the dataset, the associated label is given by <code>labels[ID]</code></p>
+</li>
+</ol>
+<p>For example, let's say that our training set contains <code>id-1</code>, <code>id-2</code> and <code>id-3</code> with respective labels <code>0</code>, <code>1</code> and <code>2</code>, with a validation set containing <code>id-4</code> with label <code>1</code>. In that case, the Python variables <code>partition</code> and <code>labels</code> look like</p>
+<pre><code>&gt;&gt;&gt; partition
+{'train': ['id-1', 'id-2', 'id-3'], 'validation': ['id-4']}
+</code></pre>
+<p>and</p>
+<pre><code>&gt;&gt;&gt; labels
+{'id-1': 0, 'id-2': 1, 'id-3': 2, 'id-4': 1}
+</code></pre>
+<p>Also, for the sake of <strong>modularity</strong>, we will write Keras code and customized classes in separate files, so that your folder looks like</p>
+<pre><code>folder/
+├── my_classes.py
+├── keras_script.py
+└── data/
+</code></pre>
+<p>where <code>data/</code> is assumed to be the folder containing your dataset.</p>
+<p>Finally, it is good to note that the code in this tutorial is aimed at being <strong>general</strong> and <strong>minimal</strong>, so that you can easily adapt it for your own dataset.</p>
+<h3><a aria-hidden=true class=anchor-bis href=#data-generator id=data-generator></a>Data generator</h3>
+<p>Now, let's go through the details of how to set the Python class <code>DataGenerator</code>, which will be used for real-time data feeding to your Keras model.</p>
+<p>First, let's write the initialization function of the class. We make the latter inherit the properties of <code>keras.utils.Sequence</code> so that we can leverage nice functionalities such as <em>multiprocessing</em>.</p>
+<div class="highlight highlight-source-python"><pre><span class=pl-k>def</span> <span class=pl-c1>__init__</span>(<span class=pl-smi><span class=pl-smi>self</span></span>, <span class=pl-smi>list_IDs</span>, <span class=pl-smi>labels</span>, <span class=pl-smi>batch_size</span><span class=pl-k>=</span><span class=pl-c1>32</span>, <span class=pl-smi>dim</span><span class=pl-k>=</span>(<span class=pl-c1>32</span>,<span class=pl-c1>32</span>,<span class=pl-c1>32</span>), <span class=pl-smi>n_channels</span><span class=pl-k>=</span><span class=pl-c1>1</span>,
+             <span class=pl-smi>n_classes</span><span class=pl-k>=</span><span class=pl-c1>10</span>, <span class=pl-smi>shuffle</span><span class=pl-k>=</span><span class=pl-c1>True</span>):
+    <span class=pl-s><span class=pl-pds>'</span>Initialization<span class=pl-pds>'</span></span>
+    <span class=pl-c1>self</span>.dim <span class=pl-k>=</span> dim
+    <span class=pl-c1>self</span>.batch_size <span class=pl-k>=</span> batch_size
+    <span class=pl-c1>self</span>.labels <span class=pl-k>=</span> labels
+    <span class=pl-c1>self</span>.list_IDs <span class=pl-k>=</span> list_IDs
+    <span class=pl-c1>self</span>.n_channels <span class=pl-k>=</span> n_channels
+    <span class=pl-c1>self</span>.n_classes <span class=pl-k>=</span> n_classes
+    <span class=pl-c1>self</span>.shuffle <span class=pl-k>=</span> shuffle
+    <span class=pl-c1>self</span>.on_epoch_end()</pre></div>
+<p>We put as arguments relevant information about the data, such as dimension sizes (e.g. a volume of length 32 will have <code>dim=(32,32,32)</code>), number of channels, number of classes, batch size, or decide whether we want to shuffle our data at generation. We also store important information such as labels and the list of IDs that we wish to generate at each pass.</p>
+<p>Here, the method <code>on_epoch_end</code> is triggered once at the very beginning as well as at the end of each epoch. If the <code>shuffle</code> parameter is set to <code>True</code>, we will get a new order of exploration at each pass (or just keep a linear exploration scheme otherwise).</p>
+<div class="highlight highlight-source-python"><pre><span class=pl-k>def</span> <span class=pl-en>on_epoch_end</span>(<span class=pl-smi><span class=pl-smi>self</span></span>):
+  <span class=pl-s><span class=pl-pds>'</span>Updates indexes after each epoch<span class=pl-pds>'</span></span>
+  <span class=pl-c1>self</span>.indexes <span class=pl-k>=</span> np.arange(<span class=pl-c1>len</span>(<span class=pl-c1>self</span>.list_IDs))
+  <span class=pl-k>if</span> <span class=pl-c1>self</span>.shuffle <span class=pl-k>==</span> <span class=pl-c1>True</span>:
+      np.random.shuffle(<span class=pl-c1>self</span>.indexes)</pre></div>
+<p>Shuffling the order in which examples are fed to the classifier is helpful so that batches between epochs do not look alike. Doing so will eventually make our model more robust.</p>
+<p>Another method that is core to the generation process is the one that achieves the most crucial job: producing batches of data. The private method in charge of this task is called <code>__data_generation</code> and takes as argument the list of IDs of the target batch.</p>
+<div class="highlight highlight-source-python"><pre><span class=pl-k>def</span> <span class=pl-en>__data_generation</span>(<span class=pl-smi><span class=pl-smi>self</span></span>, <span class=pl-smi>list_IDs_temp</span>):
+  <span class=pl-s><span class=pl-pds>'</span>Generates data containing batch_size samples<span class=pl-pds>'</span></span> <span class=pl-c><span class=pl-c>#</span> X : (n_samples, *dim, n_channels)</span>
+  <span class=pl-c><span class=pl-c>#</span> Initialization</span>
+  X <span class=pl-k>=</span> np.empty((<span class=pl-c1>self</span>.batch_size, <span class=pl-k>*</span><span class=pl-c1>self</span>.dim, <span class=pl-c1>self</span>.n_channels))
+  y <span class=pl-k>=</span> np.empty((<span class=pl-c1>self</span>.batch_size), <span class=pl-v>dtype</span><span class=pl-k>=</span><span class=pl-c1>int</span>)
+
+  <span class=pl-c><span class=pl-c>#</span> Generate data</span>
+  <span class=pl-k>for</span> i, <span class=pl-c1>ID</span> <span class=pl-k>in</span> <span class=pl-c1>enumerate</span>(list_IDs_temp):
+      <span class=pl-c><span class=pl-c>#</span> Store sample</span>
+      X[i,] <span class=pl-k>=</span> np.load(<span class=pl-s><span class=pl-pds>'</span>data/<span class=pl-pds>'</span></span> <span class=pl-k>+</span> <span class=pl-c1>ID</span> <span class=pl-k>+</span> <span class=pl-s><span class=pl-pds>'</span>.npy<span class=pl-pds>'</span></span>)
+
+      <span class=pl-c><span class=pl-c>#</span> Store class</span>
+      y[i] <span class=pl-k>=</span> <span class=pl-c1>self</span>.labels[<span class=pl-c1>ID</span>]
+
+  <span class=pl-k>return</span> X, keras.utils.to_categorical(y, <span class=pl-v>num_classes</span><span class=pl-k>=</span><span class=pl-c1>self</span>.n_classes)</pre></div>
+<p>During data generation, this code reads the NumPy array of each example from its corresponding file <code>ID.npy</code>.
+Since our code is multicore-friendly, note that you can do more complex operations instead (e.g. computations from source files) without worrying that data generation becomes a bottleneck in the training process.</p>
+<p>Also, please note that we used Keras' <code>keras.utils.to_categorical</code> function to convert our numerical labels stored in <code>y</code> to a binary form (e.g. in a 6-class problem, the third label corresponds to <code>[0 0 1 0 0 0]</code>) suited for classification.</p>
+<p>Now comes the part where we build up all these components together. Each call requests a batch index between 0 and the total number of batches, where the latter is specified in the <code>__len__</code> method.</p>
+<div class="highlight highlight-source-python"><pre><span class=pl-k>def</span> <span class=pl-c1>__len__</span>(<span class=pl-smi><span class=pl-smi>self</span></span>):
+  <span class=pl-s><span class=pl-pds>'</span>Denotes the number of batches per epoch<span class=pl-pds>'</span></span>
+  <span class=pl-k>return</span> <span class=pl-c1>int</span>(np.floor(<span class=pl-c1>len</span>(<span class=pl-c1>self</span>.list_IDs) <span class=pl-k>/</span> <span class=pl-c1>self</span>.batch_size))</pre></div>
+<p>A common practice is to set this value to $$\biggl\lfloor\frac{\#\textrm{ samples}}{\textrm{batch size}}\biggr\rfloor$$ so that the model sees the training samples at most once per epoch.</p>
+<p>Now, when the batch corresponding to a given index is called, the generator executes the <code>__getitem__</code> method to generate it.</p>
+<div class="highlight highlight-source-python"><pre><span class=pl-k>def</span> <span class=pl-c1>__getitem__</span>(<span class=pl-smi><span class=pl-smi>self</span></span>, <span class=pl-smi>index</span>):
+  <span class=pl-s><span class=pl-pds>'</span>Generate one batch of data<span class=pl-pds>'</span></span>
+  <span class=pl-c><span class=pl-c>#</span> Generate indexes of the batch</span>
+  indexes <span class=pl-k>=</span> <span class=pl-c1>self</span>.indexes[index<span class=pl-k>*</span><span class=pl-c1>self</span>.batch_size:(index<span class=pl-k>+</span><span class=pl-c1>1</span>)<span class=pl-k>*</span><span class=pl-c1>self</span>.batch_size]
+
+  <span class=pl-c><span class=pl-c>#</span> Find list of IDs</span>
+  list_IDs_temp <span class=pl-k>=</span> [<span class=pl-c1>self</span>.list_IDs[k] <span class=pl-k>for</span> k <span class=pl-k>in</span> indexes]
+
+  <span class=pl-c><span class=pl-c>#</span> Generate data</span>
+  X, y <span class=pl-k>=</span> <span class=pl-c1>self</span>.__data_generation(list_IDs_temp)
+
+  <span class=pl-k>return</span> X, y</pre></div>
+<p>The complete code corresponding to the steps that we described in this section is shown below.</p>
+<div class="highlight highlight-source-python"><pre><span class=pl-k>import</span> numpy <span class=pl-k>as</span> np
+<span class=pl-k>import</span> keras
+
+<span class=pl-k>class</span> <span class=pl-en>DataGenerator</span>(<span class=pl-e>keras</span>.<span class=pl-e>utils</span>.<span class=pl-e>Sequence</span>):
+    <span class=pl-s><span class=pl-pds>'</span>Generates data for Keras<span class=pl-pds>'</span></span>
+    <span class=pl-k>def</span> <span class=pl-c1>__init__</span>(<span class=pl-smi><span class=pl-smi>self</span></span>, <span class=pl-smi>list_IDs</span>, <span class=pl-smi>labels</span>, <span class=pl-smi>batch_size</span><span class=pl-k>=</span><span class=pl-c1>32</span>, <span class=pl-smi>dim</span><span class=pl-k>=</span>(<span class=pl-c1>32</span>,<span class=pl-c1>32</span>,<span class=pl-c1>32</span>), <span class=pl-smi>n_channels</span><span class=pl-k>=</span><span class=pl-c1>1</span>,
+                 <span class=pl-smi>n_classes</span><span class=pl-k>=</span><span class=pl-c1>10</span>, <span class=pl-smi>shuffle</span><span class=pl-k>=</span><span class=pl-c1>True</span>):
+        <span class=pl-s><span class=pl-pds>'</span>Initialization<span class=pl-pds>'</span></span>
+        <span class=pl-c1>self</span>.dim <span class=pl-k>=</span> dim
+        <span class=pl-c1>self</span>.batch_size <span class=pl-k>=</span> batch_size
+        <span class=pl-c1>self</span>.labels <span class=pl-k>=</span> labels
+        <span class=pl-c1>self</span>.list_IDs <span class=pl-k>=</span> list_IDs
+        <span class=pl-c1>self</span>.n_channels <span class=pl-k>=</span> n_channels
+        <span class=pl-c1>self</span>.n_classes <span class=pl-k>=</span> n_classes
+        <span class=pl-c1>self</span>.shuffle <span class=pl-k>=</span> shuffle
+        <span class=pl-c1>self</span>.on_epoch_end()
+
+    <span class=pl-k>def</span> <span class=pl-c1>__len__</span>(<span class=pl-smi><span class=pl-smi>self</span></span>):
+        <span class=pl-s><span class=pl-pds>'</span>Denotes the number of batches per epoch<span class=pl-pds>'</span></span>
+        <span class=pl-k>return</span> <span class=pl-c1>int</span>(np.floor(<span class=pl-c1>len</span>(<span class=pl-c1>self</span>.list_IDs) <span class=pl-k>/</span> <span class=pl-c1>self</span>.batch_size))
+
+    <span class=pl-k>def</span> <span class=pl-c1>__getitem__</span>(<span class=pl-smi><span class=pl-smi>self</span></span>, <span class=pl-smi>index</span>):
+        <span class=pl-s><span class=pl-pds>'</span>Generate one batch of data<span class=pl-pds>'</span></span>
+        <span class=pl-c><span class=pl-c>#</span> Generate indexes of the batch</span>
+        indexes <span class=pl-k>=</span> <span class=pl-c1>self</span>.indexes[index<span class=pl-k>*</span><span class=pl-c1>self</span>.batch_size:(index<span class=pl-k>+</span><span class=pl-c1>1</span>)<span class=pl-k>*</span><span class=pl-c1>self</span>.batch_size]
+
+        <span class=pl-c><span class=pl-c>#</span> Find list of IDs</span>
+        list_IDs_temp <span class=pl-k>=</span> [<span class=pl-c1>self</span>.list_IDs[k] <span class=pl-k>for</span> k <span class=pl-k>in</span> indexes]
+
+        <span class=pl-c><span class=pl-c>#</span> Generate data</span>
+        X, y <span class=pl-k>=</span> <span class=pl-c1>self</span>.__data_generation(list_IDs_temp)
+
+        <span class=pl-k>return</span> X, y
+
+    <span class=pl-k>def</span> <span class=pl-en>on_epoch_end</span>(<span class=pl-smi><span class=pl-smi>self</span></span>):
+        <span class=pl-s><span class=pl-pds>'</span>Updates indexes after each epoch<span class=pl-pds>'</span></span>
+        <span class=pl-c1>self</span>.indexes <span class=pl-k>=</span> np.arange(<span class=pl-c1>len</span>(<span class=pl-c1>self</span>.list_IDs))
+        <span class=pl-k>if</span> <span class=pl-c1>self</span>.shuffle <span class=pl-k>==</span> <span class=pl-c1>True</span>:
+            np.random.shuffle(<span class=pl-c1>self</span>.indexes)
+
+    <span class=pl-k>def</span> <span class=pl-en>__data_generation</span>(<span class=pl-smi><span class=pl-smi>self</span></span>, <span class=pl-smi>list_IDs_temp</span>):
+        <span class=pl-s><span class=pl-pds>'</span>Generates data containing batch_size samples<span class=pl-pds>'</span></span> <span class=pl-c><span class=pl-c>#</span> X : (n_samples, *dim, n_channels)</span>
+        <span class=pl-c><span class=pl-c>#</span> Initialization</span>
+        X <span class=pl-k>=</span> np.empty((<span class=pl-c1>self</span>.batch_size, <span class=pl-k>*</span><span class=pl-c1>self</span>.dim, <span class=pl-c1>self</span>.n_channels))
+        y <span class=pl-k>=</span> np.empty((<span class=pl-c1>self</span>.batch_size), <span class=pl-v>dtype</span><span class=pl-k>=</span><span class=pl-c1>int</span>)
+
+        <span class=pl-c><span class=pl-c>#</span> Generate data</span>
+        <span class=pl-k>for</span> i, <span class=pl-c1>ID</span> <span class=pl-k>in</span> <span class=pl-c1>enumerate</span>(list_IDs_temp):
+            <span class=pl-c><span class=pl-c>#</span> Store sample</span>
+            X[i,] <span class=pl-k>=</span> np.load(<span class=pl-s><span class=pl-pds>'</span>data/<span class=pl-pds>'</span></span> <span class=pl-k>+</span> <span class=pl-c1>ID</span> <span class=pl-k>+</span> <span class=pl-s><span class=pl-pds>'</span>.npy<span class=pl-pds>'</span></span>)
+
+            <span class=pl-c><span class=pl-c>#</span> Store class</span>
+            y[i] <span class=pl-k>=</span> <span class=pl-c1>self</span>.labels[<span class=pl-c1>ID</span>]
+
+        <span class=pl-k>return</span> X, keras.utils.to_categorical(y, <span class=pl-v>num_classes</span><span class=pl-k>=</span><span class=pl-c1>self</span>.n_classes)</pre></div>
+<h3><a aria-hidden=true class=anchor-bis href=#keras-script id=keras-script></a>Keras script</h3>
+<p>Now, we have to modify our Keras script accordingly so that it accepts the generator that we just created.</p>
+<div class="highlight highlight-source-python"><pre><span class=pl-k>import</span> numpy <span class=pl-k>as</span> np
+
+<span class=pl-k>from</span> keras.models <span class=pl-k>import</span> Sequential
+<span class=pl-k>from</span> my_classes <span class=pl-k>import</span> DataGenerator
+
+<span class=pl-c><span class=pl-c>#</span> Parameters</span>
+params <span class=pl-k>=</span> {<span class=pl-s><span class=pl-pds>'</span>dim<span class=pl-pds>'</span></span>: (<span class=pl-c1>32</span>,<span class=pl-c1>32</span>,<span class=pl-c1>32</span>),
+          <span class=pl-s><span class=pl-pds>'</span>batch_size<span class=pl-pds>'</span></span>: <span class=pl-c1>64</span>,
+          <span class=pl-s><span class=pl-pds>'</span>n_classes<span class=pl-pds>'</span></span>: <span class=pl-c1>6</span>,
+          <span class=pl-s><span class=pl-pds>'</span>n_channels<span class=pl-pds>'</span></span>: <span class=pl-c1>1</span>,
+          <span class=pl-s><span class=pl-pds>'</span>shuffle<span class=pl-pds>'</span></span>: <span class=pl-c1>True</span>}
+
+<span class=pl-c><span class=pl-c>#</span> Datasets</span>
+partition <span class=pl-k>=</span> <span class=pl-c><span class=pl-c>#</span> IDs</span>
+labels <span class=pl-k>=</span> <span class=pl-c><span class=pl-c>#</span> Labels</span>
+
+<span class=pl-c><span class=pl-c>#</span> Generators</span>
+training_generator <span class=pl-k>=</span> DataGenerator(partition[<span class=pl-s><span class=pl-pds>'</span>train<span class=pl-pds>'</span></span>], labels, <span class=pl-k>**</span>params)
+validation_generator <span class=pl-k>=</span> DataGenerator(partition[<span class=pl-s><span class=pl-pds>'</span>validation<span class=pl-pds>'</span></span>], labels, <span class=pl-k>**</span>params)
+
+<span class=pl-c><span class=pl-c>#</span> Design model</span>
+model <span class=pl-k>=</span> Sequential()
+[<span class=pl-c1>...</span>] <span class=pl-c><span class=pl-c>#</span> Architecture</span>
+model.compile()
+
+<span class=pl-c><span class=pl-c>#</span> Train model on dataset</span>
+model.fit_generator(<span class=pl-v>generator</span><span class=pl-k>=</span>training_generator,
+                    <span class=pl-v>validation_data</span><span class=pl-k>=</span>validation_generator,
+                    <span class=pl-v>use_multiprocessing</span><span class=pl-k>=</span><span class=pl-c1>True</span>,
+                    <span class=pl-v>workers</span><span class=pl-k>=</span><span class=pl-c1>6</span>)
+</pre></div>
+<p>As you can see, we called from <code>model</code> the <code>fit_generator</code> method instead of <code>fit</code>, where we just had to give our training generator as one of the arguments. Keras takes care of the rest!</p>
+<p>Note that our implementation enables the use of the <code>multiprocessing</code> argument of <code>fit_generator</code>, where the number of threads specified in <code>workers</code> are those that generate batches in parallel. A high enough number of workers assures that CPU computations are efficiently managed, <em>i.e.</em> that the bottleneck is indeed the neural network's forward and backward operations on the GPU (and not data generation).</p>
+<h2><a aria-hidden=true class=anchor href=#conclusion id=conclusion></a>Conclusion</h2>
+<p>This is it! You can now run your Keras script with the command</p>
+<pre><code>python3 keras_script.py
+</code></pre>
+<p>and you will see that during the training phase, <strong>data</strong> is <strong>generated in parallel by the CPU</strong> and then <strong>directly fed to the GPU</strong>.</p>
+<p>You can find a complete example of this strategy on applied on a specific example on <a href=https://github.com/shervinea/enzynet onclick=trackOutboundLink(this);>GitHub</a> where codes of <a href=https://github.com/shervinea/enzynet/blob/master/enzynet/volume.py#L24 onclick=trackOutboundLink(this);>data generation</a> as well as the <a href=https://github.com/shervinea/enzynet/blob/master/scripts/architecture/enzynet_adapted.py onclick=trackOutboundLink(this);>Keras script</a> are available.</p>
+
+
+<h2><a aria-hidden=true href=#also-interested></a>You may also like...</h2>
+<div class=mobile-container style=overflow-x:hidden;>
+  <div class="card-deck mb-3 text-center">
+    
+    <div class="card mb-4 shadow-sm">
+      <a href=teaching/cs-221 onclick=trackOutboundLink(this);><span class=link-spanner></span></a>
+      <div class=card-header>
+        <h4>Artificial Intelligence cheatsheets</h4>
+      </div>
+      <div class=card-body>
+        <img src=blog/illustrations/also-viewed_001.png?f5faa5e91de0d97be2ca23db3317088f>
+        <ul class="list-unstyled mt-3 mb-4">
+          <li>• Reflex-based models</li>
+          <li>• States-based models</li>
+          <li>• Variables-based models</li>
+          <li>• Logic-based models</li>
+        </ul>
+      </div>
+    </div>
+
+    
+    <div class="card mb-4 shadow-sm">
+      <a href=teaching/cs-229 onclick=trackOutboundLink(this);><span class=link-spanner></span></a>
+      <div class=card-header>
+        <h4>Machine Learning cheatsheets</h4>
+      </div>
+      <div class=card-body>
+        <img src=blog/illustrations/also-viewed_002.png?04d4fbc59ace38c43da9410bcdf17ec1>
+        <ul class="list-unstyled mt-3 mb-4">
+          <li>• Supervised learning</li>
+          <li>• Unsupervised learning</li>
+          <li>• Deep learning</li>
+          <li>• Machine learning tips and tricks</li>
+        </ul>
+      </div>
+    </div>
+
+    
+    <div class="card mb-4 shadow-sm">
+      <a href=teaching/cs-230 onclick=trackOutboundLink(this);><span class=link-spanner></span></a>
+      <div class=card-header>
+        <h4>Deep Learning cheatsheets</h4>
+      </div>
+      <div class=card-body>
+        <img src=blog/illustrations/also-viewed_003.png?4360f6646421699cd14fa5d9c570ed54>
+        <ul class="list-unstyled mt-3 mb-4">
+          <li>• Convolutional neural networks</li>
+          <li>• Recurrent neural networks</li>
+          <li>• Deep learning tips and tricks</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+</article> </div> <footer class=footer> <div class=footer id=contact> <div class=container> <a href=https://twitter.com/shervinea onclick=trackOutboundLink(this);><i class="fa fa-twitter fa-3x fa-fw"></i></a> <a href=https://linkedin.com/in/shervineamidi onclick=trackOutboundLink(this);><i class="fa fa-linkedin fa-3x fa-fw"></i></a> <a href=https://github.com/shervinea onclick=trackOutboundLink(this);><i class="fa fa-github fa-3x fa-fw"></i></a> <a href="https://scholar.google.com/citations?user=nMnMTm8AAAAJ" onclick=trackOutboundLink(this);><i class="fa fa-google fa-3x fa-fw"></i></a> <a class=crptdml data-domain=stanford data-name=shervine data-tld=edu href=#mail onclick="trackOutboundLink(this); window.location.href = 'mailto:' + this.dataset.name + '@' + this.dataset.domain + '.' + this.dataset.tld"><i class="fa fa-envelope fa-3x fa-fw"></i></a> </div> </div> </footer> </body></html>
