@@ -44,11 +44,10 @@ def visualize_histories(**images):
         plt.legend(['train', 'val'])
     plt.show()
 
-def load_images_from_hdf5(directory_images,train_begin,train_stop,n_images):
+def load_images_from_hdf5(directory_images,begin,stop):
     
     with h5py.File(os.path.join(directory_images), "r") as f:
         images = f["images"]
-        images_train = images[:,:,train_begin:train_stop]
-        images_val = images[:,:,train_stop:n_images+1]
+        images_train = images[:,:,begin:stop]
         
-    return images_train, images_val
+    return images_train
